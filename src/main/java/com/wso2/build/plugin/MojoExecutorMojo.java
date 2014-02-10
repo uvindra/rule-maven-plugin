@@ -128,6 +128,7 @@ public class MojoExecutorMojo extends AbstractMojo {
                 executionEnvironment(mavenProject, mavenSession, pluginManager));
     }
 
+    // TODO : implement this in a platform independent way
     private boolean checkMavenCompatibility(String mavenVersion) {
         return true;
     }

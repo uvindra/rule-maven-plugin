@@ -14,7 +14,7 @@ import java.util.Map;
 public class FactoryContainerImpl implements FactoryContainer {
 
     /**
-     * Inject all implementations of BuildRule.  The container automatically add all the components defined with the role <code>BuildRule.class</code>.
+     * Inject all implementations of Factory.  The container automatically add all the components defined with the role <code>Factory.class</code>.
      */
     @Requirement( role = Factory.class )
     private Map<String, Factory> factories;
