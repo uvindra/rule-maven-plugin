@@ -8,19 +8,20 @@ import com.wso2.build.interfaces.RuleRegistry;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
+import org.apache.maven.settings.Profile;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
@@ -55,6 +56,22 @@ public class MojoExecutorMojo extends AbstractMojo {
      */
     private BuildPluginManager pluginManager;
 
+    /**
+     * The Maven RuntimeInformation component.
+     *
+     * @component
+     * @required
+     */
+    private RuntimeInformation runtime;
+
+    /**
+     * The settings.xml file in .m2.
+     *
+     * @parameter expression="${settings}"
+     * @required
+     */
+    private Settings settings;
+
 
     private FactoryContainer factoryContainer;
 
@@ -68,7 +85,13 @@ public class MojoExecutorMojo extends AbstractMojo {
 
             Factory factory = factoryContainer.getFactory("default");
 
-            RuleRegistry registry = factory.getRegistry();
+            Map<String, Profile> profileMap = settings.getProfilesAsMap();
+
+            Profile profile = profileMap.get("rule");
+
+            Properties properties = profile.getProperties();
+
+            RuleRegistry registry = factory.getRegistry(properties);
             PluginConfigParser parser = factory.getParser();
 
             List<Rule> ruleList = registry.getRules();
@@ -128,8 +151,33 @@ public class MojoExecutorMojo extends AbstractMojo {
                 executionEnvironment(mavenProject, mavenSession, pluginManager));
     }
 
-    // TODO : implement this in a platform independent way
+
     private boolean checkMavenCompatibility(String mavenVersion) {
+        String[] tokenizedVersion = mavenVersion.split(".");
+
+        // Version specified as wild card, skip the validation
+        if (1 == tokenizedVersion.length && tokenizedVersion[0].equalsIgnoreCase("x")) {
+            return true;
+        }
+
+        String localMavenVersion = runtime.getMavenVersion();
+
+        String[] tokenizedLocalVersion = localMavenVersion.split(".");
+
+        if (tokenizedVersion.length == tokenizedLocalVersion.length) {
+            for (int i = 0; i < tokenizedVersion.length; ++i) {
+                if (tokenizedVersion[i].equalsIgnoreCase("x")) {  // Wild card match
+                    continue;
+                }
+                else if (false == tokenizedVersion[i].equalsIgnoreCase(tokenizedLocalVersion[i])) {
+                    return false;   // Token mismatch
+                }
+            }
+        }
+        else {  // Token lengths differ so version format is different
+            return false;
+        }
+
         return true;
     }
 }

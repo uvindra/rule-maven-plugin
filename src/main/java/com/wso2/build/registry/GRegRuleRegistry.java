@@ -1,5 +1,6 @@
 package com.wso2.build.registry;
 
+import com.wso2.build.beans.GRegParameters;
 import com.wso2.build.beans.Rule;
 import com.wso2.build.interfaces.RuleRegistry;
 import com.wso2.build.stub.GetValidationServiceGovernanceException;
@@ -8,7 +9,6 @@ import com.wso2.build.stub.ValidationStub;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
-import org.w3c.dom.*;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
@@ -26,14 +26,13 @@ public class GRegRuleRegistry implements RuleRegistry{
 
     private ConfigurationContext configContext = null;
     private ValidationStub stub = null;
+    private String CARBON_HOME;
+    private String axis2Repo;
+    private String username;
+    private String password;
+    private String serverURL;
 
-    private static final String CARBON_HOME = "/home/uvindra/WSO2_Apps/GREG-4.6.0";
-    private static final String axis2Repo = CARBON_HOME + File.separator +"repository" +
-            File.separator + "deployment" + File.separator + "client";
     private static final String axis2Conf = ServerConfiguration.getInstance().getFirstProperty("Axis2Config.clientAxis2XmlLocation");
-    private static final String username = "admin";
-    private static final String password = "admin";
-    private static final String serverURL = "https://localhost:9443/services/Validation";
     private static final String pluginUsageStartTag = "<pluginUsage>";
     private static final String pluginUsageEndTag = "</pluginUsage>";
     private static final String nameStartTag = "<name>";
@@ -46,11 +45,19 @@ public class GRegRuleRegistry implements RuleRegistry{
     private static final String compatibleMavenVersionEndTag = "</compatibleMavenVersion>";
     private static final String ruleActiveStatus = "Active";
 
-    public GRegRuleRegistry() {
+    public GRegRuleRegistry(GRegParameters parameters) {
+        CARBON_HOME = parameters.getGregHome();
+        axis2Repo = CARBON_HOME + File.separator +"repository" + File.separator +
+                                    "deployment" + File.separator + "client";
+
+        username = parameters.getGregUsername();
+        password = parameters.getGregPassword();
+        serverURL = parameters.getGregEndpoint();
+
         System.setProperty("javax.net.ssl.trustStore", CARBON_HOME + File.separator + "repository" +
                 File.separator + "resources" + File.separator + "security" + File.separator +
                 "wso2carbon.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+        System.setProperty("javax.net.ssl.trustStorePassword", parameters.getTrustStorePassword());
         System.setProperty("javax.net.ssl.trustStoreType", "JKS");
         System.setProperty("carbon.repo.write.mode", "true");
     }
