@@ -28,6 +28,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 /**
  * Created by uvindra on 2/9/14.
  * @goal check
+ * @requiresDependencyResolution test
  */
 public class MojoExecutorMojo extends AbstractMojo {
     /**
@@ -92,7 +93,7 @@ public class MojoExecutorMojo extends AbstractMojo {
             Properties properties = profile.getProperties();
 
             RuleRegistry registry = factory.getRegistry(properties);
-            PluginConfigParser parser = factory.getParser();
+
 
             List<Rule> ruleList = registry.getRules();
 
@@ -106,6 +107,8 @@ public class MojoExecutorMojo extends AbstractMojo {
                 }
 
                 if (checkMavenCompatibility(rule.getCompatibleMavenVersion())) {
+
+                    PluginConfigParser parser = factory.getParser();
 
                     parser.parseConfigs(rule.getPluginUsage());
 

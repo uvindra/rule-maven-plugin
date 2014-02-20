@@ -26,11 +26,11 @@ public class GRegRuleRegistry implements RuleRegistry{
 
     private ConfigurationContext configContext = null;
     private ValidationStub stub = null;
-    private String CARBON_HOME;
+    private String GREG_HOME;
     private String axis2Repo;
     private String username;
     private String password;
-    private String serverURL;
+    private String endpointURL;
 
     private static final String axis2Conf = ServerConfiguration.getInstance().getFirstProperty("Axis2Config.clientAxis2XmlLocation");
     private static final String pluginUsageStartTag = "<pluginUsage>";
@@ -46,15 +46,15 @@ public class GRegRuleRegistry implements RuleRegistry{
     private static final String ruleActiveStatus = "Active";
 
     public GRegRuleRegistry(GRegParameters parameters) {
-        CARBON_HOME = parameters.getGregHome();
-        axis2Repo = CARBON_HOME + File.separator +"repository" + File.separator +
+        GREG_HOME = parameters.getGregHome();
+        axis2Repo = GREG_HOME + File.separator +"repository" + File.separator +
                                     "deployment" + File.separator + "client";
 
         username = parameters.getGregUsername();
         password = parameters.getGregPassword();
-        serverURL = parameters.getGregEndpoint();
+        endpointURL = parameters.getGregEndpoint();
 
-        System.setProperty("javax.net.ssl.trustStore", CARBON_HOME + File.separator + "repository" +
+        System.setProperty("javax.net.ssl.trustStore", GREG_HOME + File.separator + "repository" +
                 File.separator + "resources" + File.separator + "security" + File.separator +
                 "wso2carbon.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", parameters.getTrustStorePassword());
@@ -68,7 +68,7 @@ public class GRegRuleRegistry implements RuleRegistry{
             configContext = ConfigurationContextFactory.createConfigurationContextFromFileSystem(
                     axis2Repo, axis2Conf);
 
-            stub = new ValidationStub(configContext, serverURL, false);
+            stub = new ValidationStub(configContext, endpointURL, false);
 
             CarbonUtils.setBasicAccessSecurityHeaders(username, password, stub._getServiceClient());
         }
