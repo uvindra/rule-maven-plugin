@@ -5,12 +5,15 @@ import java.io.Serializable;
 /**
  * Created by uvindra on 2/12/14.
  */
-public class GRegParameters implements Serializable {
+public class Parameters implements Serializable {
     private String gregHome;
-    private String gregEndpoint;
+    private String gregRuleEndpoint;
+    private String gregLifeCycleEndpoint;
     private String gregUsername;
     private String gregPassword;
     private String trustStorePassword;
+    private String excludes;
+    private String explicits;
 
     public String getGregHome() {
         return gregHome;
@@ -20,12 +23,12 @@ public class GRegParameters implements Serializable {
         this.gregHome = gregHome;
     }
 
-    public String getGregEndpoint() {
-        return gregEndpoint;
+    public String getGregRuleEndpoint() {
+        return gregRuleEndpoint;
     }
 
-    public void setGregEndpoint(String gregEndpoint) {
-        this.gregEndpoint = gregEndpoint;
+    public void setGregRuleEndpoint(String gregRuleEndpoint) {
+        this.gregRuleEndpoint = gregRuleEndpoint;
     }
 
     public String getGregUsername() {
@@ -50,5 +53,29 @@ public class GRegParameters implements Serializable {
 
     public void setTrustStorePassword(String trustStorePassword) {
         this.trustStorePassword = trustStorePassword;
+    }
+
+    public String getGregLifeCycleEndpoint() {
+        return gregLifeCycleEndpoint;
+    }
+
+    public void setGregLifeCycleEndpoint(String gregLifeCycleEndpoint) {
+        this.gregLifeCycleEndpoint = gregLifeCycleEndpoint;
+    }
+
+    public String getExcludes() {
+        return excludes;
+    }
+
+    public void setExcludes(String excludes) {
+        this.excludes = excludes;
+    }
+
+    public String getExplicits() {
+        return explicits;
+    }
+
+    public void setExplicits(String explicits) {
+        this.explicits = explicits;
     }
 }

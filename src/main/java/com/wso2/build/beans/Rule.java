@@ -1,5 +1,6 @@
 package com.wso2.build.beans;
 
+import com.wso2.build.enums.RuleCategory;
 import org.xml.sax.InputSource;
 
 import java.io.Serializable;
@@ -9,20 +10,20 @@ import java.io.Serializable;
  */
 public class Rule implements Serializable {
     private String name;
-    private String category;
+    private RuleCategory category;
     private boolean isActive;
     private String compatibleMavenVersion;
     private InputSource pluginUsage;
 
     public Rule() {
         this.name = "";
-        this.category = "";
+        this.category = RuleCategory.DEFAULT;
         this.isActive = false;
         this.compatibleMavenVersion = "";
         this.pluginUsage = null;
     }
 
-    public Rule(String name, String category, boolean isActive,
+    public Rule(String name, RuleCategory category, boolean isActive,
                 String compatibleMavenVersion, InputSource pluginUsage) {
         this.name = name;
         this.category = category;
@@ -39,11 +40,11 @@ public class Rule implements Serializable {
         this.name = name;
     }
 
-    public String getCategory() {
+    public RuleCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(RuleCategory category) {
         this.category = category;
     }
 

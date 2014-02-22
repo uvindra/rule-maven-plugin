@@ -1,6 +1,8 @@
 package com.wso2.build.plugin;
 
+import com.wso2.build.beans.Parameters;
 import com.wso2.build.beans.Rule;
+import com.wso2.build.enums.RuleCategory;
 import com.wso2.build.interfaces.Factory;
 import com.wso2.build.interfaces.FactoryContainer;
 import com.wso2.build.interfaces.PluginConfigParser;
@@ -74,11 +76,14 @@ public class MojoExecutorMojo extends AbstractMojo {
     private Settings settings;
 
 
-    private FactoryContainer factoryContainer;
+    private FactoryContainer factoryContainer = null;
+
 
 
     @Override
     public void execute() throws MojoExecutionException {
+        Parameters parameters = loadParameters();
+
         try {
             PlexusContainer container = new DefaultPlexusContainer();
 
@@ -86,37 +91,7 @@ public class MojoExecutorMojo extends AbstractMojo {
 
             Factory factory = factoryContainer.getFactory("default");
 
-            Map<String, Profile> profileMap = settings.getProfilesAsMap();
-
-            Profile profile = profileMap.get("rule");
-
-            Properties properties = profile.getProperties();
-
-            RuleRegistry registry = factory.getRegistry(properties);
-
-
-            List<Rule> ruleList = registry.getRules();
-
-            ListIterator<Rule> it = (ListIterator<Rule>) ruleList.iterator();
-
-            while (it.hasNext()) {
-                Rule rule = it.next();
-
-                if (true != rule.isActive()) {
-                    continue;
-                }
-
-                if (checkMavenCompatibility(rule.getCompatibleMavenVersion())) {
-
-                    PluginConfigParser parser = factory.getParser();
-
-                    parser.parseConfigs(rule.getPluginUsage());
-
-                    run(parser.getGroupId(), parser.getArtifactId(), parser.getVersion(), parser.getGoal(),
-                            parser.getId(), parser.getConfiguration());
-                }
-
-            }
+            executeRules(factory, parameters);
 
             // stop the components and container
             container.dispose();
@@ -130,6 +105,38 @@ public class MojoExecutorMojo extends AbstractMojo {
             e.printStackTrace();
 
             throw new MojoExecutionException("Factory container could not be instantiated");
+        }
+    }
+
+
+    private void executeRules(Factory factory, Parameters parameters) throws MojoExecutionException {
+        RuleRegistry registry = factory.getRegistry(parameters);
+
+        List<Rule> ruleList = registry.getRules();
+
+        for(Rule rule : ruleList) {
+
+            if (true != rule.isActive()) {
+                continue;
+            }
+
+            if (true == isRuleExcluded(rule.getName(), parameters)) {
+                continue;
+            }
+
+            if (true != isRuleExecutable(rule.getName(), rule.getCategory(), parameters)) {
+                continue;
+            }
+
+            if (isMavenCompatible(rule.getCompatibleMavenVersion())) {
+
+                PluginConfigParser parser = factory.getParser();
+
+                parser.parseConfigs(rule.getPluginUsage());
+
+                run(parser.getGroupId(), parser.getArtifactId(), parser.getVersion(), parser.getGoal(),
+                        parser.getId(), parser.getConfiguration());
+            }
         }
     }
 
@@ -154,8 +161,29 @@ public class MojoExecutorMojo extends AbstractMojo {
                 executionEnvironment(mavenProject, mavenSession, pluginManager));
     }
 
+    private Parameters loadParameters() {
+        Map<String, Profile> profileMap = settings.getProfilesAsMap();
 
-    private boolean checkMavenCompatibility(String mavenVersion) {
+        Profile profile = profileMap.get("rule");
+
+        Properties properties = profile.getProperties();
+
+        Parameters parameters = new Parameters();
+
+        parameters.setGregHome(properties.getProperty("greg.home"));
+        parameters.setGregRuleEndpoint(properties.getProperty("greg.rule.endpoint"));
+        parameters.setGregLifeCycleEndpoint(properties.getProperty("greg.lifecycle.endpoint"));
+        parameters.setGregUsername(properties.getProperty("greg.username"));
+        parameters.setGregPassword(properties.getProperty("greg.password"));
+        parameters.setTrustStorePassword(properties.getProperty("trust.store.password"));
+        parameters.setExcludes(properties.getProperty("exclude"));
+        parameters.setExplicits(properties.getProperty("explicit"));
+
+        return parameters;
+    }
+
+
+    private boolean isMavenCompatible(String mavenVersion) {
         String[] tokenizedVersion = mavenVersion.split(".");
 
         // Version specified as wild card, skip the validation
@@ -182,5 +210,30 @@ public class MojoExecutorMojo extends AbstractMojo {
         }
 
         return true;
+    }
+
+
+    private boolean isRuleExcluded(String name, Parameters parameters) {
+        String excludedRules = parameters.getExcludes();
+
+        if (excludedRules.isEmpty()) {
+            return false;
+        }
+
+        return excludedRules.contains(name);
+    }
+
+    private boolean isRuleExecutable(String name, RuleCategory category, Parameters parameters) {
+        if (category == RuleCategory.DEFAULT) {  // Default rules can be executed
+            return true;
+        }
+
+        String explicitRules = parameters.getExplicits();
+
+        if (explicitRules.isEmpty()) {  // Ignore explicit rules since not specified
+            return false;
+        }
+
+        return  explicitRules.contains(name);
     }
 }
