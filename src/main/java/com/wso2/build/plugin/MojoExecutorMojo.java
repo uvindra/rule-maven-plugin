@@ -184,7 +184,7 @@ public class MojoExecutorMojo extends AbstractMojo {
 
 
     private boolean isMavenCompatible(String mavenVersion) {
-        String[] tokenizedVersion = mavenVersion.split(".");
+        String[] tokenizedVersion = mavenVersion.split("\\.");
 
         // Version specified as wild card, skip the validation
         if (1 == tokenizedVersion.length && tokenizedVersion[0].equalsIgnoreCase("x")) {
@@ -193,7 +193,7 @@ public class MojoExecutorMojo extends AbstractMojo {
 
         String localMavenVersion = runtime.getMavenVersion();
 
-        String[] tokenizedLocalVersion = localMavenVersion.split(".");
+        String[] tokenizedLocalVersion = localMavenVersion.split("\\.");
 
         if (tokenizedVersion.length == tokenizedLocalVersion.length) {
             for (int i = 0; i < tokenizedVersion.length; ++i) {
