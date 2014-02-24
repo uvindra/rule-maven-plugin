@@ -23,6 +23,7 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
+
 import java.util.*;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
@@ -40,7 +41,7 @@ public class MojoExecutorMojo extends AbstractMojo {
      * @required
      * @readonly
      */
-    private MavenProject mavenProject;
+    private MavenProject project;
 
     /**
      * The current Maven session.
@@ -49,7 +50,7 @@ public class MojoExecutorMojo extends AbstractMojo {
      * @required
      * @readonly
      */
-    private MavenSession mavenSession;
+    private MavenSession session;
 
     /**
      * The Maven BuildPluginManager component.
@@ -158,7 +159,7 @@ public class MojoExecutorMojo extends AbstractMojo {
         plugin.addExecution(pluginExecution);
 
         executeMojo(plugin, goal, configuration,
-                executionEnvironment(mavenProject, mavenSession, pluginManager));
+                executionEnvironment(project, session, pluginManager));
     }
 
     private Parameters loadParameters() {
@@ -216,7 +217,7 @@ public class MojoExecutorMojo extends AbstractMojo {
     private boolean isRuleExcluded(String name, Parameters parameters) {
         String excludedRules = parameters.getExcludes();
 
-        if (excludedRules.isEmpty()) {
+        if (null == excludedRules || excludedRules.isEmpty()) {
             return false;
         }
 
@@ -230,7 +231,7 @@ public class MojoExecutorMojo extends AbstractMojo {
 
         String explicitRules = parameters.getExplicits();
 
-        if (explicitRules.isEmpty()) {  // Ignore explicit rules since not specified
+        if (null == explicitRules || explicitRules.isEmpty()) {  // Ignore explicit rules since not specified
             return false;
         }
 
