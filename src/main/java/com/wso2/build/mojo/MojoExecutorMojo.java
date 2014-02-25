@@ -1,4 +1,4 @@
-package com.wso2.build.plugin;
+package com.wso2.build.mojo;
 
 import com.wso2.build.beans.Parameters;
 import com.wso2.build.beans.Rule;
@@ -130,7 +130,6 @@ public class MojoExecutorMojo extends AbstractMojo {
             }
 
             if (isMavenCompatible(rule.getCompatibleMavenVersion())) {
-
                 PluginConfigParser parser = factory.getParser();
 
                 parser.parseConfigs(rule.getPluginUsage());

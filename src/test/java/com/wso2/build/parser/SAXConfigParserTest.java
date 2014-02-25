@@ -24,9 +24,9 @@ public class SAXConfigParserTest extends TestCase {
 
     @Test
     public void testParsing() {
-        String xmlString = "<plugin>\n" +
+        String xmlString = "<mojo>\n" +
                 "        <groupId>org.apache.maven.plugins</groupId>\n" +
-                "        <artifactId>maven-enforcer-plugin</artifactId>\n" +
+                "        <artifactId>maven-enforcer-mojo</artifactId>\n" +
                 "        <version>1.3.1</version>\n" +
                 "        <executions>\n" +
                 "          <execution>\n" +
@@ -42,7 +42,7 @@ public class SAXConfigParserTest extends TestCase {
                 "            </configuration>\n" +
                 "          </execution>\n" +
                 "        </executions>\n" +
-                "</plugin>";
+                "</mojo>";
 
         InputSource source = new InputSource(new StringReader(xmlString));
 

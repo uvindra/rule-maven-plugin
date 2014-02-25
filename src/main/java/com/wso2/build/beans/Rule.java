@@ -9,19 +9,11 @@ import java.io.Serializable;
  * Created by uvindra on 2/9/14.
  */
 public class Rule implements Serializable {
-    private String name;
-    private RuleCategory category;
-    private boolean isActive;
-    private String compatibleMavenVersion;
+    private String name = "";
+    private RuleCategory category = RuleCategory.DEFAULT;
+    private boolean isActive = false;
+    private String compatibleMavenVersion = "";
     private InputSource pluginUsage;
-
-    public Rule() {
-        this.name = "";
-        this.category = RuleCategory.DEFAULT;
-        this.isActive = false;
-        this.compatibleMavenVersion = "";
-        this.pluginUsage = null;
-    }
 
     public Rule(String name, RuleCategory category, boolean isActive,
                 String compatibleMavenVersion, InputSource pluginUsage) {
