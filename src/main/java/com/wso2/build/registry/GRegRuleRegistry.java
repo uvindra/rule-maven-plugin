@@ -9,6 +9,7 @@ import com.wso2.build.stub.*;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
@@ -57,7 +58,7 @@ public class GRegRuleRegistry implements RuleRegistry{
     }
     
     @Override
-    public List<Rule> getRules() {
+    public List<Rule> getRules() throws MojoExecutionException {
         try {
             configContext = ConfigurationContextFactory.createConfigurationContextFromFileSystem(
                     axis2Repo, axis2Conf);
@@ -70,6 +71,7 @@ public class GRegRuleRegistry implements RuleRegistry{
         }
         catch (AxisFault axisFault) {
             axisFault.printStackTrace();
+            throw new MojoExecutionException("AxisFault thrown : " + axisFault.getMessage());
         }
 
         String[] artifactIds = getRuleArtifactIds();
@@ -121,7 +123,7 @@ public class GRegRuleRegistry implements RuleRegistry{
     }
 
 
-    private String[] getRuleArtifactIds() {
+    private String[] getRuleArtifactIds() throws MojoExecutionException {
         String[] artifactIds = new String[0];
 
         try {
@@ -132,16 +134,18 @@ public class GRegRuleRegistry implements RuleRegistry{
         }
         catch (RemoteException e) {
             e.printStackTrace();
+            throw new MojoExecutionException("RemoteException thrown : " + e.getMessage());
         }
        catch (GetBuildRuleArtifactIDsServiceGovernanceException e) {
             e.printStackTrace();
+           throw new MojoExecutionException("GetBuildRuleArtifactIDsServiceGovernanceException thrown : " + e.getMessage());
         }
 
         return artifactIds;
     }
 
 
-    private String getRule(String artifactID){
+    private String getRule(String artifactID) throws MojoExecutionException {
         BuildRuleStub.GetBuildRule getBuildRule = new BuildRuleStub.GetBuildRule();
         getBuildRule.setArtifactId(artifactID);
 
@@ -154,14 +158,16 @@ public class GRegRuleRegistry implements RuleRegistry{
 
         } catch (RemoteException e) {
             e.printStackTrace();
+            throw new MojoExecutionException("RemoteException thrown : " + e.getMessage());
         } catch (GetBuildRuleServiceGovernanceException e) {
             e.printStackTrace();
+            throw new MojoExecutionException("GetBuildRuleServiceGovernanceException thrown : " + e.getMessage());
         }
 
         return rule;
     }
 
-    private String getLifecycleState(String name, String version) {
+    private String getLifecycleState(String name, String version) throws MojoExecutionException {
         CustomLifecyclesChecklistAdminServiceStub.GetLifecycleBean getLifecycleBean = new CustomLifecyclesChecklistAdminServiceStub.GetLifecycleBean();
 
         String fullPath = "/_system/governance/trunk/buidlrules/" + name + "/" + version;
@@ -177,8 +183,10 @@ public class GRegRuleRegistry implements RuleRegistry{
 
         } catch (RemoteException e) {
             e.printStackTrace();
+            throw new MojoExecutionException("RemoteException thrown : " + e.getMessage());
         } catch (CustomLifecyclesChecklistAdminServiceExceptionException e) {
             e.printStackTrace();
+            throw new MojoExecutionException("CustomLifecyclesChecklistAdminServiceExceptionException thrown : " + e.getMessage());
         }
 
         CustomLifecyclesChecklistAdminServiceStub.Property[] properties = lifecycleBean.getLifecycleProperties();
