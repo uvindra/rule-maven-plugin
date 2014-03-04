@@ -191,12 +191,22 @@ public class GRegRuleRegistry implements RuleRegistry{
 
         CustomLifecyclesChecklistAdminServiceStub.Property[] properties = lifecycleBean.getLifecycleProperties();
 
-        assert(1 == properties.length);  // Assumption that there will be only one property
+        String lifeCycleState;
 
-        String[] values = properties[0].getValues();
+        if (0 == properties.length) {  // Assumption that there will be at least one property
+            throw new IllegalStateException("LifeCycle properties are not available");
+        }
+        else { // The first property will be store the state of the Life Cycle
+            String[] values = properties[0].getValues();
 
-        assert(1 == values.length); //Assumption that there will be only a single value for the property
+            if (1 != values.length) { //Assumption that there will be only a single value for the property
+                throw new IllegalStateException("LifeCycle property contains multiple values");
+            }
+            else {
+                lifeCycleState = values[0];
+            }
+        }
 
-        return values[0];
+        return lifeCycleState;
     }
 }
