@@ -1,116 +1,36 @@
-package com.wso2.build.mojo;
+package com.wso2.build.core;
 
 import com.wso2.build.beans.Parameters;
 import com.wso2.build.beans.Rule;
 import com.wso2.build.enums.RuleCategory;
 import com.wso2.build.interfaces.Factory;
-import com.wso2.build.interfaces.FactoryContainer;
 import com.wso2.build.interfaces.PluginConfigParser;
 import com.wso2.build.interfaces.RuleRegistry;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
-import org.apache.maven.settings.Profile;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Settings;
-import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.PlexusContainerException;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import java.util.*;
-
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
+import static org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo;
+import static org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment;
 
 /**
- * Created by uvindra on 2/9/14.
- * @goal check
- * @requiresDependencyResolution test
+ * Created by uvindra on 3/4/14.
  */
-public class MojoExecutorMojo extends AbstractMojo {
-    /**
-     * The project currently being build.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
-    private MavenProject project;
+public final class RuleExecutor {
 
-    /**
-     * The current Maven session.
-     *
-     * @parameter expression="${session}"
-     * @required
-     * @readonly
-     */
-    private MavenSession session;
-
-    /**
-     * The Maven BuildPluginManager component.
-     *
-     * @component
-     * @required
-     */
-    private BuildPluginManager pluginManager;
-
-    /**
-     * The Maven RuntimeInformation component.
-     *
-     * @component
-     * @required
-     */
-    private RuntimeInformation runtime;
-
-    /**
-     * The settings.xml file in .m2.
-     *
-     * @parameter expression="${settings}"
-     * @required
-     */
-    private Settings settings;
-
-
-    private FactoryContainer factoryContainer = null;
-
-
-
-    @Override
-    public void execute() throws MojoExecutionException {
-        Parameters parameters = loadParameters();
-
-        try {
-            PlexusContainer container = new DefaultPlexusContainer();
-
-            factoryContainer = container.lookup(FactoryContainer.class);
-
-            Factory factory = factoryContainer.getFactory("default");
-
-            executeRules(factory, parameters);
-
-            // stop the components and container
-            container.dispose();
-        }
-        catch (PlexusContainerException e) {
-            e.printStackTrace();
-
-            throw new MojoExecutionException("Default Plexus container could not be instantiated");
-        }
-        catch (ComponentLookupException e) {
-            e.printStackTrace();
-
-            throw new MojoExecutionException("Factory container could not be instantiated");
-        }
-    }
-
-
-    private void executeRules(Factory factory, Parameters parameters) throws MojoExecutionException {
+    public void executeRulesSequentially(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
+                                RuntimeInformation runtime, Factory factory, Parameters parameters) throws MojoExecutionException {
         RuleRegistry registry = factory.getRegistry(parameters);
 
         List<Rule> ruleList = registry.getRules();
@@ -129,39 +49,62 @@ public class MojoExecutorMojo extends AbstractMojo {
                 continue;
             }
 
-            if (isMavenCompatible(rule.getCompatibleMavenVersion())) {
+            if (isMavenCompatible(runtime, rule.getCompatibleMavenVersion())) {
                 PluginConfigParser parser = factory.getParser();
 
                 parser.parseConfigs(rule.getPluginUsage());
 
-                run(parser.getGroupId(), parser.getArtifactId(), parser.getVersion(), parser.getGoal(),
-                        parser.getId(), parser.getConfiguration());
+                run(project, session, pluginManager, parser);
             }
         }
     }
 
-    private void run(String groupId, String artifactId, String version,
-                             String goal, String id, Xpp3Dom configuration) throws MojoExecutionException{
-        Plugin plugin = new Plugin();
-        plugin.setGroupId(groupId);
-        plugin.setArtifactId(artifactId);
-        plugin.setVersion(version);
 
-        PluginExecution pluginExecution = new PluginExecution();
+    public void executeAllRules(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
+                                         RuntimeInformation runtime, Factory factory, Parameters parameters) throws MojoExecutionException {
+        RuleRegistry registry = factory.getRegistry(parameters);
 
-        pluginExecution.setId(id);
+        List<Rule> ruleList = registry.getRules();
 
-        List<String> goals = new LinkedList<String>();
-        goals.add(goal);
-        pluginExecution.setGoals(goals);
+        List<MojoExecutionException> exceptions = new LinkedList<MojoExecutionException>();
 
-        plugin.addExecution(pluginExecution);
+        for (Rule rule : ruleList) {
 
-        executeMojo(plugin, goal, configuration,
-                executionEnvironment(project, session, pluginManager));
+            if (true != rule.isActive()) {
+                continue;
+            }
+
+            if (true == isRuleExcluded(rule.getName(), parameters)) {
+                continue;
+            }
+
+            if (true != isRuleExecutable(rule.getName(), rule.getCategory(), parameters)) {
+                continue;
+            }
+
+            if (isMavenCompatible(runtime, rule.getCompatibleMavenVersion())) {
+                PluginConfigParser parser = factory.getParser();
+
+                parser.parseConfigs(rule.getPluginUsage());
+
+                try {
+                    run(project, session, pluginManager, parser);
+                }
+                catch (MojoExecutionException e) {
+                    exceptions.add(e);
+                }
+            }
+        }
+
+        System.out.println("Exception count : " + exceptions.size());
+
+        for (MojoExecutionException exception : exceptions) {
+            throw exception;
+        }
     }
 
-    private Parameters loadParameters() {
+
+    public Parameters loadParameters(Settings settings) {
         Map<String, Profile> profileMap = settings.getProfilesAsMap();
 
         Profile profile = profileMap.get("rule");
@@ -183,7 +126,29 @@ public class MojoExecutorMojo extends AbstractMojo {
     }
 
 
-    private boolean isMavenCompatible(String mavenVersion) {
+    private void run(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
+                                PluginConfigParser parser) throws MojoExecutionException{
+        Plugin plugin = new Plugin();
+        plugin.setGroupId(parser.getGroupId());
+        plugin.setArtifactId(parser.getArtifactId());
+        plugin.setVersion(parser.getVersion());
+
+        PluginExecution pluginExecution = new PluginExecution();
+
+        pluginExecution.setId(parser.getId());
+
+        List<String> goals = new LinkedList<String>();
+        goals.add(parser.getGoal());
+        pluginExecution.setGoals(goals);
+
+        plugin.addExecution(pluginExecution);
+
+        executeMojo(plugin, parser.getGoal(), parser.getConfiguration(),
+                executionEnvironment(project, session, pluginManager));
+    }
+
+
+    private boolean isMavenCompatible(RuntimeInformation runtime, String mavenVersion) {
         String[] tokenizedVersion = mavenVersion.split("\\.");
 
         // Version specified as wild card, skip the validation
@@ -222,6 +187,7 @@ public class MojoExecutorMojo extends AbstractMojo {
 
         return excludedRules.contains(name);
     }
+
 
     private boolean isRuleExecutable(String name, RuleCategory category, Parameters parameters) {
         if (category == RuleCategory.DEFAULT) {  // Default rules can be executed

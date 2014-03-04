@@ -196,7 +196,7 @@ public class GRegRuleRegistry implements RuleRegistry{
         if (0 == properties.length) {  // Assumption that there will be at least one property
             throw new IllegalStateException("LifeCycle properties are not available");
         }
-        else { // The first property will be store the state of the Life Cycle
+        else { // The first property will store the state of the Life Cycle
             String[] values = properties[0].getValues();
 
             if (1 != values.length) { //Assumption that there will be only a single value for the property
