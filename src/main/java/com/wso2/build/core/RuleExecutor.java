@@ -96,8 +96,6 @@ public final class RuleExecutor {
             }
         }
 
-        System.out.println("Exception count : " + exceptions.size());
-
         for (MojoExecutionException exception : exceptions) {
             throw exception;
         }
