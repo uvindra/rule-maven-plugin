@@ -66,8 +66,7 @@ public class AllRuleExecutorMojo  extends AbstractMojo {
 
 
     private FactoryContainer factoryContainer = null;
-    private RuleExecutor ruleExecutor = new RuleExecutor();
-
+    private RuleExecutor ruleExecutor = new RuleExecutor(getLog());
 
 
     @Override
