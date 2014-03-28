@@ -1,5 +1,6 @@
 package com.wso2.build.core;
 
+import com.google.inject.internal.util.$SourceProvider;
 import com.wso2.build.beans.Parameters;
 import com.wso2.build.beans.Rule;
 import com.wso2.build.enums.RuleCategory;
@@ -36,49 +37,73 @@ public final class RuleExecutor {
     }
 
     public void executeRulesSequentially(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
-                                RuntimeInformation runtime, Factory factory, Parameters parameters) throws MojoExecutionException {
+                                RuntimeInformation runtime, Factory factory, Parameters parameters, List reactorProjects) throws MojoExecutionException {
         logRuleBegin(project.getName());
 
         RuleRegistry registry = factory.getRegistry(parameters);
 
         List<Rule> ruleList = registry.getRules();
 
+        int inactiveCount = 0;
+        int excludedCount = 0;
+        int skippedExplicitCount = 0;
+        int mvnIncompatibleCount = 0;
+        int executedCount = 0;
+
         for(Rule rule : ruleList) {
 
             if (true != rule.isActive()) {
+                ++inactiveCount;
                 continue;
             }
 
             if (true == isRuleExcluded(rule.getName(), parameters)) {
+                ++excludedCount;
                 continue;
             }
 
             if (true != isRuleExecutable(rule.getName(), rule.getCategory(), parameters)) {
+                ++skippedExplicitCount;
                 continue;
             }
 
-            if (isMavenCompatible(runtime, rule.getCompatibleMavenVersion())) {
-                PluginConfigParser parser = factory.getParser();
+            if (true != isMavenCompatible(runtime, rule.getCompatibleMavenVersion())) {
+                ++mvnIncompatibleCount;
+                continue;
+            }
 
-                parser.parseConfigs(rule.getPluginUsage());
+            PluginConfigParser parser = factory.getParser();
 
-                try {
-                    run(project, session, pluginManager, parser);
-                    logRulePassed(rule.getName());
-                }
-                catch (MojoExecutionException e) {
-                    logRuleFailed(rule.getName());
-                    throw e;
-                }
+            parser.parseConfigs(rule.getPluginUsage());
+
+            ++executedCount;
+            try {
+                run(project, session, pluginManager, parser);
+                logRulePassed(rule.getName());
+            }
+            catch (MojoExecutionException e) {
+                logRuleFailed(rule.getName());
+                logRuleStats(ruleList.size(), executedCount, inactiveCount, excludedCount,
+                        skippedExplicitCount, mvnIncompatibleCount);
+                throw e;
             }
         }
 
         logRuleEnd(project.getName());
+
+
+        // only print stats once, on the very last project in the reactor
+        final int size = reactorProjects.size();
+        MavenProject lastProject = (MavenProject) reactorProjects.get(size - 1);
+        if (lastProject == project) {
+            logRuleStats(ruleList.size(), executedCount, inactiveCount, excludedCount,
+                    skippedExplicitCount, mvnIncompatibleCount);
+        }
     }
 
 
     public void executeAllRules(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
-                                         RuntimeInformation runtime, Factory factory, Parameters parameters) throws MojoExecutionException {
+                                         RuntimeInformation runtime, Factory factory, Parameters parameters, List reactorProjects) throws MojoExecutionException {
         logRuleBegin(project.getName());
 
         RuleRegistry registry = factory.getRegistry(parameters);
@@ -87,33 +112,46 @@ public final class RuleExecutor {
 
         List<MojoExecutionException> exceptions = new LinkedList<MojoExecutionException>();
 
+        int inactiveCount = 0;
+        int excludedCount = 0;
+        int skippedExplicitCount = 0;
+        int mvnIncompatibleCount = 0;
+        int executedCount = 0;
+
         for (Rule rule : ruleList) {
 
             if (true != rule.isActive()) {
+                ++inactiveCount;
                 continue;
             }
 
             if (true == isRuleExcluded(rule.getName(), parameters)) {
+                ++excludedCount;
                 continue;
             }
 
             if (true != isRuleExecutable(rule.getName(), rule.getCategory(), parameters)) {
+                ++skippedExplicitCount;
                 continue;
             }
 
-            if (isMavenCompatible(runtime, rule.getCompatibleMavenVersion())) {
-                PluginConfigParser parser = factory.getParser();
+            if (true != isMavenCompatible(runtime, rule.getCompatibleMavenVersion())) {
+                ++mvnIncompatibleCount;
+                continue;
+            }
 
-                parser.parseConfigs(rule.getPluginUsage());
+            PluginConfigParser parser = factory.getParser();
 
-                try {
-                    run(project, session, pluginManager, parser);
-                    logRulePassed(rule.getName());
-                }
-                catch (MojoExecutionException e) {
-                    logRuleFailed(rule.getName());
-                    exceptions.add(e);
-                }
+            parser.parseConfigs(rule.getPluginUsage());
+
+            ++executedCount;
+            try {
+                run(project, session, pluginManager, parser);
+                logRulePassed(rule.getName());
+            }
+            catch (MojoExecutionException e) {
+                logRuleFailed(rule.getName());
+                exceptions.add(e);
             }
         }
 
@@ -124,8 +162,18 @@ public final class RuleExecutor {
         }
         logRuleEnd(project.getName());
 
+        // only print stats once, on the very last project in the reactor
+        final int size = reactorProjects.size();
+        MavenProject lastProject = (MavenProject) reactorProjects.get(size - 1);
+        if (lastProject == project) {
+            logRuleStats(ruleList.size(), executedCount, inactiveCount, excludedCount,
+                    skippedExplicitCount, mvnIncompatibleCount);
+        }
+
         if (!exceptions.isEmpty()) {
-             throw new MojoExecutionException("Rule failure detected");
+            logRuleStats(ruleList.size(), executedCount, inactiveCount, excludedCount,
+                    skippedExplicitCount, mvnIncompatibleCount);
+            throw new MojoExecutionException("Rule failure detected");
         }
     }
 
@@ -173,6 +221,19 @@ public final class RuleExecutor {
         log.info("Rule Name : " + name + ", Status : FAILED");
     }
 
+
+    private void logRuleStats(final int totalRuleCount, final int executedCount,
+                              final int inactiveCount, final int excludedCount, final int skippedExplicitCount, final int mvnIncompatibleCount) {
+        log.info("=================================================================================");
+        log.info("RULE EXECUTION STATS");
+        log.info("=================================================================================");
+        log.info("Total Rule Count : " + totalRuleCount);
+        log.info("Executed Rule Count : " + executedCount);
+        log.info("Inactive Rule Count : " + inactiveCount);
+        log.info("Excluded Rule Count : " + excludedCount);
+        log.info("Maven Version Incompatible Count : " + mvnIncompatibleCount);
+        log.info("Skipped Explicit Rule Count : " + skippedExplicitCount);
+    }
 
     private void run(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
                                 PluginConfigParser parser) throws MojoExecutionException{

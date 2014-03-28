@@ -16,6 +16,8 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
+import java.util.List;
+
 
 /**
  * Created by uvindra on 2/9/14.
@@ -65,6 +67,13 @@ public class SequentialRuleExecutorMojo extends AbstractMojo {
      */
     private Settings settings;
 
+    /**
+     * The projects in the reactor.
+     *
+     * @parameter expression="${reactorProjects}"
+     * @readonly
+     */
+    private List reactorProjects;
 
     private FactoryContainer factoryContainer = null;
     private RuleExecutor ruleExecutor = new RuleExecutor(getLog());
@@ -82,7 +91,7 @@ public class SequentialRuleExecutorMojo extends AbstractMojo {
 
             Factory factory = factoryContainer.getFactory("default");
 
-            ruleExecutor.executeRulesSequentially(project, session, pluginManager, runtime, factory, parameters);
+            ruleExecutor.executeRulesSequentially(project, session, pluginManager, runtime, factory, parameters, reactorProjects);
 
             // stop the components and container
             container.dispose();

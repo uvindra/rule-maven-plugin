@@ -16,6 +16,9 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
+import java.io.File;
+import java.util.List;
+
 /**
  * Created by uvindra on 3/4/14.
  * @goal checkall
@@ -64,6 +67,13 @@ public class AllRuleExecutorMojo  extends AbstractMojo {
      */
     private Settings settings;
 
+    /**
+     * The projects in the reactor.
+     *
+     * @parameter expression="${reactorProjects}"
+     * @readonly
+     */
+    private List reactorProjects;
 
     private FactoryContainer factoryContainer = null;
     private RuleExecutor ruleExecutor = new RuleExecutor(getLog());
@@ -80,7 +90,7 @@ public class AllRuleExecutorMojo  extends AbstractMojo {
 
             Factory factory = factoryContainer.getFactory("default");
 
-            ruleExecutor.executeAllRules(project, session, pluginManager, runtime, factory, parameters);
+            ruleExecutor.executeAllRules(project, session, pluginManager, runtime, factory, parameters, reactorProjects);
 
             // stop the components and container
             container.dispose();
