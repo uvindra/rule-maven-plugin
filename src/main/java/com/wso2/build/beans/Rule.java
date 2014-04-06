@@ -1,8 +1,7 @@
 package com.wso2.build.beans;
 
 import com.wso2.build.enums.RuleCategory;
-import org.xml.sax.InputSource;
-
+import com.wso2.build.enums.RuleType;
 import java.io.Serializable;
 
 /**
@@ -11,17 +10,19 @@ import java.io.Serializable;
 public class Rule implements Serializable {
     private String name = "";
     private RuleCategory category = RuleCategory.DEFAULT;
+    private RuleType type = RuleType.PLUGIN;
     private boolean isActive = false;
     private String compatibleMavenVersion = "";
-    private InputSource pluginUsage;
+    private String definition;
 
-    public Rule(String name, RuleCategory category, boolean isActive,
-                String compatibleMavenVersion, InputSource pluginUsage) {
+    public Rule(String name, RuleCategory category, RuleType type, boolean isActive,
+                String compatibleMavenVersion, String definition) {
         this.name = name;
         this.category = category;
+        this.type = type;
         this.isActive = isActive;
         this.compatibleMavenVersion = compatibleMavenVersion;
-        this.pluginUsage = pluginUsage;
+        this.definition = definition;
     }
 
     public String getName() {
@@ -48,12 +49,12 @@ public class Rule implements Serializable {
         this.compatibleMavenVersion = compatibleMavenVersion;
     }
 
-    public InputSource getPluginUsage() {
-        return pluginUsage;
+    public String getDefinition() {
+        return definition;
     }
 
-    public void setPluginUsage(InputSource pluginUsage) {
-        this.pluginUsage = pluginUsage;
+    public void setDefinition(String definition) {
+        this.definition = definition;
     }
 
     public boolean isActive() {
@@ -62,5 +63,13 @@ public class Rule implements Serializable {
 
     public void setActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public RuleType getType() {
+        return type;
+    }
+
+    public void setType(RuleType type) {
+        this.type = type;
     }
 }

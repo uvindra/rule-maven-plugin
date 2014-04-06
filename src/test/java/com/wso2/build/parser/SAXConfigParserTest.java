@@ -10,16 +10,12 @@ import java.io.StringReader;
  * Created by uvindra on 2/9/14.
  */
 public class SAXConfigParserTest extends TestCase {
+
     public void setUp() throws Exception {
         super.setUp();
-
-
-
-
     }
 
     public void tearDown() throws Exception {
-
     }
 
     @Test

@@ -4,15 +4,16 @@ package com.wso2.build.registry;
 import com.wso2.build.beans.Parameters;
 import com.wso2.build.beans.Rule;
 import com.wso2.build.enums.RuleCategory;
+import com.wso2.build.enums.RuleType;
 import com.wso2.build.interfaces.RuleRegistry;
 import com.wso2.build.stub.*;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.carbon.utils.CarbonUtils;
-import org.xml.sax.InputSource;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
@@ -31,12 +32,14 @@ public class GRegRuleRegistry implements RuleRegistry{
     Parameters parameters = null;
 
     private static final String axis2Conf = ServerConfiguration.getInstance().getFirstProperty("Axis2Config.clientAxis2XmlLocation");
-    private static final String pluginUsageStartTag = "<pluginUsage>";
-    private static final String pluginUsageEndTag = "</pluginUsage>";
+    private static final String definitionStartTag = "<definition>";
+    private static final String definitionEndTag = "</definition>";
     private static final String nameStartTag = "<name>";
     private static final String nameEndTag = "</name>";
     private static final String categoryStartTag = "<category>";
     private static final String categoryEndTag = "</category>";
+    private static final String typeStartTag = "<type>";
+    private static final String typeEndTag = "</type>";
     private static final String compatibleMavenVersionStartTag = "<version>";
     private static final String compatibleMavenVersionEndTag = "</version>";
     private static final String ruleActiveStatus = "Active";
@@ -85,20 +88,13 @@ public class GRegRuleRegistry implements RuleRegistry{
                 continue;
             }
 
-            int tagStart = rule.indexOf(nameStartTag);
-            int tagEnd = rule.indexOf(nameEndTag);
+            String name = extractTagValue(rule, nameStartTag, nameEndTag);
 
-            String name = rule.substring(tagStart + nameStartTag.length(), tagEnd);
+            String category = extractTagValue(rule, categoryStartTag, categoryEndTag);
 
-            tagStart = rule.indexOf(categoryStartTag);
-            tagEnd = rule.indexOf(categoryEndTag);
+            String type = extractTagValue(rule, typeStartTag, typeEndTag);
 
-            String category = rule.substring(tagStart + categoryStartTag.length(), tagEnd);
-
-            tagStart = rule.indexOf(compatibleMavenVersionStartTag);
-            tagEnd = rule.indexOf(compatibleMavenVersionEndTag);
-
-            String mvnVersion = rule.substring(tagStart + compatibleMavenVersionStartTag.length(), tagEnd);
+            String mvnVersion = extractTagValue(rule, compatibleMavenVersionStartTag, compatibleMavenVersionEndTag);
 
             String status = getLifecycleState(name, mvnVersion);
 
@@ -108,20 +104,37 @@ public class GRegRuleRegistry implements RuleRegistry{
                 isActive = true;
             }
 
-            tagStart = rule.indexOf(pluginUsageStartTag);
-            tagEnd = rule.indexOf(pluginUsageEndTag);
+            String definition = extractTagValue(rule, definitionStartTag, definitionEndTag);
 
-            String pluginBody = rule.substring(tagStart + pluginUsageStartTag.length(), tagEnd);
+            //final RuleType ruleType = RuleType.getValue(type);
 
-            pluginBody = pluginBody.replace("&lt;", "<");
-            pluginBody = pluginBody.replace("&gt;", ">");
+            // Plugin usage section will have its angle brackets replaced with respective character values
+            // so these need to converted back so xml parsing can be done
+            //if (RuleType.PLUGIN == ruleType) {
+            //    definition = definition.replace("&lt;", "<");
+            //    definition = definition.replace("&gt;", ">");
+            //}
 
-            ruleList.add(new Rule(name, RuleCategory.getValue(category), isActive, mvnVersion, new InputSource(new StringReader(pluginBody))));
+            definition = StringEscapeUtils.unescapeXml(definition);
+
+            ruleList.add(new Rule(name, RuleCategory.getValue(category), RuleType.getValue(type),
+                                isActive, mvnVersion, definition));
         }
 
         return ruleList;
     }
 
+
+    private String extractTagValue(final String content, final String startTag, final String endTag) {
+        int tagStart = content.indexOf(startTag);
+        int tagEnd = content.indexOf(endTag);
+
+        if (-1 != tagStart && -1 != tagEnd) {
+            return content.substring(tagStart + startTag.length(), tagEnd);
+        }
+
+        return "";
+    }
 
     private String[] getRuleArtifactIds() throws MojoExecutionException {
         String[] artifactIds = new String[0];

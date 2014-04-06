@@ -31,10 +31,19 @@
                     <value>Explicit</value>
                 </values>
             </field>
+            <field type="options">
+                <name>Type</name>
+                <values>
+                    <value>Maven Plugin</value>
+                    <value>Script</value>
+                </values>
+            </field>
             <field type="text-area">
                 <name>Plugin Usage</name>
             </field>
-
+            <field type="text-area">
+                <name>Definition</name>
+            </field>
             <field type="text-area">
                 <name>Description</name>
             </field>
