@@ -1,7 +1,11 @@
 package com.wso2.build.scripting;
 
+import com.wso2.build.beans.Artifact;
+import com.wso2.build.beans.Parameters;
+import com.wso2.build.registry.BuildDependencyClient;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.w3c.dom.Document;
@@ -14,19 +18,21 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by uvindra on 4/1/14.
  */
 final public class ScriptUtilContext extends AbstractUtilContext {
 
+    private static final String ruleStateFolder = "rulestate";
     private static final String mvnBundlePluginName = "maven-bundle-plugin";
     private static final String instructionsTag = "instructions";
+    private static final String approvedState = "Approved";
+    private static final String dependencyApprovalRule = "_dependencyApprovalRule_";
 
-    public ScriptUtilContext(MavenProject mavenProject) {
-        super(mavenProject);
+    public ScriptUtilContext(MavenProject mavenProject, Parameters parameters, Log log) {
+        super(mavenProject, parameters, log);
     }
 
     public List<String> getBundlePluginInstructionValues(String searchInstruction) {
@@ -132,7 +138,7 @@ final public class ScriptUtilContext extends AbstractUtilContext {
                     Node parentNode = node.getParentNode();
 
                     // The child elements parent is not the specified parent
-                    if (false == parentElement.equals(parentNode.getNodeName())) {
+                    if (!parentElement.equals(parentNode.getNodeName())) {
                         return false;
                     }
                 }
@@ -245,5 +251,78 @@ final public class ScriptUtilContext extends AbstractUtilContext {
         }
 
         return childNodeList;
+    }
+
+
+    public boolean isRuleExecuted(String ruleName) {
+        String runStatePath = parameters.getGregHome()+ File.separator + ruleStateFolder;
+
+        File directory = new File(runStatePath);
+
+        if (!directory.exists()) {
+            return false;
+        }
+
+        File file = new File(runStatePath + File.separator + ruleName);
+
+        if (file.isFile()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public void flagRuleExecution(String ruleName) {
+        String runStatePath = parameters.getGregHome()+ File.separator + ruleStateFolder;
+
+        File directory = new File(runStatePath);
+
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+        File file = new File(runStatePath + File.separator + ruleName);
+
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void logDependencyApprovalState() {
+        if (isRuleExecuted(dependencyApprovalRule)) {
+            return;
+        }
+
+        BuildDependencyClient client = new BuildDependencyClient();
+
+        client.loadDependecies(parameters);
+
+        log.info("No of Artifacts : " + client.getArtifactsSize());
+
+        Iterator it = client.getArtifactIterator();
+
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+
+            Artifact artifact = (Artifact) entry.getValue();
+
+            if (true != approvedState.equalsIgnoreCase(artifact.getState())) {
+                List<String> usedModules = client.getArtifactUsage((String) entry.getKey());
+
+                log.info("");
+                log.info("=========================================");
+                log.info("Unapproved Artifact : " + entry.getKey());
+                log.info("=========================================");
+
+                for (String usedModule : usedModules) {
+                    log.info("Module affected : " + usedModule);
+                }
+            }
+        }
+
+        flagRuleExecution(dependencyApprovalRule);
     }
 }

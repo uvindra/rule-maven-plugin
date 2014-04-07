@@ -33,7 +33,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment;
  * Created by uvindra on 3/4/14.
  */
 public final class RuleExecutor {
-    private Log log = null;
+    private Log log;
 
     private final class RuleStat {
         public int inactiveCount = 0;
@@ -83,7 +83,7 @@ public final class RuleExecutor {
                 executeMavenPluginRule(project, session, pluginManager, factory, rule, stat, ruleList.size());
             }
             else if (RuleType.SCRIPT == rule.getType()) {
-                executeScriptRule(project, rule, stat, ruleList.size());
+                executeScriptRule(project, rule, stat, parameters, ruleList.size());
             }
             else {
                 throw new MojoExecutionException("Unhandled Rule Type specified for rule");
@@ -139,7 +139,7 @@ public final class RuleExecutor {
                 executeMavenPluginRule(project, session, pluginManager, factory, rule, stat, exceptions);
             }
             else if (RuleType.SCRIPT == rule.getType()) {
-                executeScriptRule(project, rule, stat, exceptions);
+                executeScriptRule(project, rule, stat, parameters, exceptions);
             }
             else {
                 exceptions.add(new MojoExecutionException("Unhandled Rule Type specified for rule"));
@@ -176,11 +176,14 @@ public final class RuleExecutor {
 
         Parameters parameters = new Parameters();
 
-        parameters.setGregHome(properties.getProperty("greg.home"));
-        parameters.setGregRuleEndpoint(properties.getProperty("greg.rule.endpoint"));
-        parameters.setGregLifeCycleEndpoint(properties.getProperty("greg.lifecycle.endpoint"));
-        parameters.setGregUsername(properties.getProperty("greg.username"));
-        parameters.setGregPassword(properties.getProperty("greg.password"));
+        parameters.setGregHome(properties.getProperty("home"));
+        parameters.setGregModuleEndpoint(properties.getProperty("module.endpoint"));
+        parameters.setGregDependencyEndpoint(properties.getProperty("dependency.endpoint"));
+        parameters.setGregArtifactEndpoint(properties.getProperty("artifact.endpoint"));
+        parameters.setGregRuleEndpoint(properties.getProperty("rule.endpoint"));
+        parameters.setGregLifeCycleEndpoint(properties.getProperty("lifecycle.endpoint"));
+        parameters.setGregUsername(properties.getProperty("username"));
+        parameters.setGregPassword(properties.getProperty("password"));
         parameters.setTrustStorePassword(properties.getProperty("trust.store.password"));
         parameters.setExcludes(properties.getProperty("exclude"));
         parameters.setExplicits(properties.getProperty("explicit"));
@@ -224,10 +227,11 @@ public final class RuleExecutor {
         }
     }
 
-    private void executeScriptRule(MavenProject project, Rule rule, RuleStat stat, List<MojoExecutionException> exceptions) {
+    private void executeScriptRule(MavenProject project, Rule rule, RuleStat stat, Parameters parameters, List<MojoExecutionException> exceptions) {
         ++stat.executedCount;
 
-        ScriptUtilContext utils = new ScriptUtilContext(project);
+
+        ScriptUtilContext utils = new ScriptUtilContext(project, parameters, log);
 
         try {
             if (utils.exec(rule.getDefinition())) {
@@ -235,17 +239,17 @@ public final class RuleExecutor {
             }
             else {
                 logRuleFailed(rule.getName());
-                exceptions.add(new MojoExecutionException(utils.getErrorString()));
+                exceptions.add(new MojoExecutionException(utils.getLogString()));
             }
         } catch (MojoExecutionException e) {
             exceptions.add(e);
         }
     }
 
-    private void executeScriptRule(MavenProject project, Rule rule, RuleStat stat, final int ruleCount) throws MojoExecutionException {
+    private void executeScriptRule(MavenProject project, Rule rule, RuleStat stat, Parameters parameters, final int ruleCount) throws MojoExecutionException {
         ++stat.executedCount;
 
-        ScriptUtilContext utils = new ScriptUtilContext(project);
+        ScriptUtilContext utils = new ScriptUtilContext(project, parameters, log);
 
         if (utils.exec(rule.getDefinition())) {
             logRulePassed(rule.getName());
@@ -253,7 +257,7 @@ public final class RuleExecutor {
         else {
             logRuleFailed(rule.getName());
             logRuleStats(ruleCount, stat);
-            throw new MojoExecutionException(utils.getErrorString());
+            throw new MojoExecutionException(utils.getLogString());
         }
     }
 

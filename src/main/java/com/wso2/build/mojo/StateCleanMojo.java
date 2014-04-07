@@ -37,7 +37,7 @@ public class StateCleanMojo extends AbstractMojo {
 
         Properties properties = profile.getProperties();
 
-        String runStatePath = properties.getProperty("run.state.path");
+        String runStatePath = properties.getProperty("home") + File.separator + "rulestate";
 
         File filePath = new File(runStatePath);
 

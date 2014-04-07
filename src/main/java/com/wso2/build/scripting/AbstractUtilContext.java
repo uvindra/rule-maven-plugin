@@ -1,10 +1,12 @@
 package com.wso2.build.scripting;
 
 
+import com.wso2.build.beans.Parameters;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+
 import javax.script.*;
-import java.io.FileReader;
 
 
 /**
@@ -22,12 +24,15 @@ public class AbstractUtilContext {
 
     protected MavenProject mavenProject = null;
     protected MavenProject parentProject = null;
+    protected Parameters parameters = null;
+    protected Log log = null;
     private ScriptContext newContext = null;
-    private String  errorString = "N/A";
+    private String logString = "N/A";
 
-
-    public AbstractUtilContext(MavenProject mavenProject) {
+    public AbstractUtilContext(MavenProject mavenProject, Parameters parameters, Log log) {
         this.mavenProject = mavenProject;
+        this.parameters = parameters;
+        this.log = log;
         parentProject = this.mavenProject.getParent();
 
         newContext = new SimpleScriptContext();
@@ -40,8 +45,8 @@ public class AbstractUtilContext {
     public boolean exec(String rule) throws MojoExecutionException {
         String script = scriptPrefix + rule;
 
-        System.out.println("Script out : ");
-        System.out.println(script);
+        //System.out.println("Script out : ");
+        //System.out.println(script);
 
         try {
             engine.eval(script, newContext);
@@ -69,14 +74,13 @@ public class AbstractUtilContext {
         return isPassed;
     }
 
-    public void setErrorString(String errorString) {
-        this.errorString = errorString;
+    public void setLogString(String logString) {
+        this.logString = logString;
     }
 
-    public String getErrorString() {
-        return errorString;
+    public String getLogString() {
+        return logString;
     }
 
     public boolean isChildPOM() { return (null != parentProject); }
-
 }

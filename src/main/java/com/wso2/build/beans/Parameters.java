@@ -9,6 +9,9 @@ public class Parameters implements Serializable {
     private String gregHome;
     private String gregRuleEndpoint;
     private String gregLifeCycleEndpoint;
+    private String gregModuleEndpoint;
+    private String gregDependencyEndpoint;
+    private String gregArtifactEndpoint;
     private String gregUsername;
     private String gregPassword;
     private String trustStorePassword;
@@ -77,5 +80,29 @@ public class Parameters implements Serializable {
 
     public void setExplicits(String explicits) {
         this.explicits = explicits;
+    }
+
+    public String getGregModuleEndpoint() {
+        return gregModuleEndpoint;
+    }
+
+    public void setGregModuleEndpoint(String gregModuleEndpoint) {
+        this.gregModuleEndpoint = gregModuleEndpoint;
+    }
+
+    public String getGregDependencyEndpoint() {
+        return gregDependencyEndpoint;
+    }
+
+    public void setGregDependencyEndpoint(String gregDependencyEndpoint) {
+        this.gregDependencyEndpoint = gregDependencyEndpoint;
+    }
+
+    public String getGregArtifactEndpoint() {
+        return gregArtifactEndpoint;
+    }
+
+    public void setGregArtifactEndpoint(String gregArtifactEndpoint) {
+        this.gregArtifactEndpoint = gregArtifactEndpoint;
     }
 }
