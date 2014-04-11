@@ -28,7 +28,7 @@ public class ImportRulesMojo extends AbstractMojo {
 
         GRegRuleRegistry regRuleRegistry = new GRegRuleRegistry(parameters);
 
-        regRuleRegistry.importRules();
+        regRuleRegistry.importRules(getLog());
     }
 
 }

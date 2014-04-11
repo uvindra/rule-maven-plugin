@@ -27,6 +27,6 @@ public class ExportRulesMojo extends AbstractMojo {
 
         GRegRuleRegistry regRuleRegistry = new GRegRuleRegistry(parameters);
 
-        regRuleRegistry.exportRules();
+        regRuleRegistry.exportRules(getLog());
     }
 }

@@ -13,6 +13,7 @@ import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.maven.plugin.logging.Log;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.carbon.utils.CarbonUtils;
 import java.io.*;
@@ -119,7 +120,7 @@ public class GRegRuleRegistry implements RuleRegistry{
         return ruleList;
     }
 
-    public void importRules() throws MojoExecutionException {
+    public void importRules(Log log) throws MojoExecutionException {
         createServiceStubs();
 
         String[] artifactIds = getRuleArtifactIds();
@@ -146,7 +147,11 @@ public class GRegRuleRegistry implements RuleRegistry{
             try {
                 //file.createNewFile();
                 if (!file.isFile()) { // Save file only if it does not already exist
+                    log.info("Importing rule : " + name);
                     FileUtils.writeStringToFile(file, rule, "utf8");
+                }
+                else {
+                    log.info("Import already done for rule : " + name);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -155,7 +160,7 @@ public class GRegRuleRegistry implements RuleRegistry{
     }
 
 
-    public void exportRules() throws MojoExecutionException {
+    public void exportRules(Log log) throws MojoExecutionException {
         createServiceStubs();
 
         String ruleImportPath = parameters.getHomePath()+ File.separator + importRulesFolder;
@@ -185,6 +190,7 @@ public class GRegRuleRegistry implements RuleRegistry{
                                 extractTagValue(rule, compatibleMavenVersionStartTag, compatibleMavenVersionEndTag);
 
                         if (ruleKeys.contains(searchKey)) { // Build rule already exists in registry
+                            log.info("Rule " + searchKey + " already exists in registry");
                             continue;   // Dont export the rule, or it will get duplicated in the registry
                         }
                     }
