@@ -327,20 +327,37 @@ final public class ScriptUtilContext extends AbstractUtilContext {
         flagRuleExecution(dependencyApprovalRule);
     }
 
-    public boolean isPackageImportLatest(String packageName, String version) {
+    public boolean isPackageVersionExported(String packageName, String version) {
         PackageBundleClient client = new PackageBundleClient();
 
         client.loadPackageBundles(parameters);
 
-        return client.isLatestVersion(packageName, version);
+        return client.isVersionExported(packageName, version);
+    }
+
+    public boolean isLatestExportedPackageVersion(String packageName, String version) {
+        PackageBundleClient client = new PackageBundleClient();
+
+        client.loadPackageBundles(parameters);
+
+        return client.isLatestExportedVersion(packageName, version);
     }
 
 
-    public String getLatestPackageVersion(String packageName) {
+    public String getLatestExportedPackageVersion(String packageName) {
         PackageBundleClient client = new PackageBundleClient();
 
         client.loadPackageBundles(parameters);
 
         return client.getLatestVersion(packageName);
+    }
+
+
+    public List<String> getExportedPackageVersions(String packageName) {
+        PackageBundleClient client = new PackageBundleClient();
+
+        client.loadPackageBundles(parameters);
+
+        return client.getExportedVersions(packageName);
     }
 }

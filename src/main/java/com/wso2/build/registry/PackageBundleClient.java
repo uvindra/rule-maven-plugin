@@ -10,7 +10,9 @@ import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.File;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -34,7 +36,7 @@ public class PackageBundleClient {
         setupPackageInfo(parameters);
     }
 
-    public boolean isLatestVersion(final String packageName, final String version) {
+    public boolean isLatestExportedVersion(final String packageName, final String version) {
         TreeSet<String> versionSet = packageVersions.get(packageName);
 
         if (null == versionSet) { // Package does not exist
@@ -50,6 +52,17 @@ public class PackageBundleClient {
         return true;
     }
 
+    public boolean isVersionExported(final String packageName, final String version) {
+        TreeSet<String> versionSet = packageVersions.get(packageName);
+
+        if (null == versionSet) { // Package does not exist
+            return true;
+        }
+
+        return versionSet.contains(version);
+    }
+
+
     public String getLatestVersion(final String packageName) {
         String version = "";
 
@@ -61,6 +74,20 @@ public class PackageBundleClient {
 
         return version;
     }
+
+
+    public List<String> getExportedVersions(final String packageName) {
+        List<String> versions = new ArrayList<String>();
+
+        TreeSet<String> versionSet = packageVersions.get(packageName);
+
+        if (null != versionSet) { // Package does not exist
+            versions.addAll(versionSet);
+        }
+
+        return versions;
+    }
+
 
 
     private void setupPackageInfo(Parameters parameters) {
