@@ -1,6 +1,7 @@
 package com.wso2.build.mojo;
 
 import com.wso2.build.beans.Parameters;
+import com.wso2.build.core.Configs;
 import com.wso2.build.core.RuleExecutor;
 import com.wso2.build.interfaces.Factory;
 import com.wso2.build.interfaces.FactoryContainer;
@@ -82,7 +83,7 @@ public class SequentialRuleExecutorMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        Parameters parameters = ruleExecutor.loadParameters(settings);
+        Parameters parameters = Configs.loadParameters(settings);
 
         try {
             PlexusContainer container = new DefaultPlexusContainer();

@@ -167,31 +167,6 @@ public final class RuleExecutor {
     }
 
 
-    public Parameters loadParameters(Settings settings) {
-        Map<String, Profile> profileMap = settings.getProfilesAsMap();
-
-        Profile profile = profileMap.get("rule");
-
-        Properties properties = profile.getProperties();
-
-        Parameters parameters = new Parameters();
-
-        parameters.setGregHome(properties.getProperty("home"));
-        parameters.setGregModuleEndpoint(properties.getProperty("module.endpoint"));
-        parameters.setGregDependencyEndpoint(properties.getProperty("dependency.endpoint"));
-        parameters.setGregArtifactEndpoint(properties.getProperty("artifact.endpoint"));
-        parameters.setGregRuleEndpoint(properties.getProperty("rule.endpoint"));
-        parameters.setGregLifeCycleEndpoint(properties.getProperty("lifecycle.endpoint"));
-        parameters.setGregUsername(properties.getProperty("username"));
-        parameters.setGregPassword(properties.getProperty("password"));
-        parameters.setTrustStorePassword(properties.getProperty("trust.store.password"));
-        parameters.setExcludes(properties.getProperty("exclude"));
-        parameters.setExplicits(properties.getProperty("explicit"));
-
-        return parameters;
-    }
-
-
     private void executeMavenPluginRule(MavenProject project, MavenSession session, BuildPluginManager pluginManager,
                                         Factory factory, Rule rule, RuleStat stat, List<MojoExecutionException> exceptions) {
         PluginConfigParser parser = factory.getParser();

@@ -3,6 +3,7 @@ package com.wso2.build.scripting;
 import com.wso2.build.beans.Artifact;
 import com.wso2.build.beans.Parameters;
 import com.wso2.build.registry.BuildDependencyClient;
+import com.wso2.build.registry.PackageBundleClient;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.logging.Log;
@@ -255,7 +256,7 @@ final public class ScriptUtilContext extends AbstractUtilContext {
 
 
     public boolean isRuleExecuted(String ruleName) {
-        String runStatePath = parameters.getGregHome()+ File.separator + ruleStateFolder;
+        String runStatePath = parameters.getHomePath()+ File.separator + ruleStateFolder;
 
         File directory = new File(runStatePath);
 
@@ -273,7 +274,7 @@ final public class ScriptUtilContext extends AbstractUtilContext {
     }
 
     public void flagRuleExecution(String ruleName) {
-        String runStatePath = parameters.getGregHome()+ File.separator + ruleStateFolder;
+        String runStatePath = parameters.getHomePath()+ File.separator + ruleStateFolder;
 
         File directory = new File(runStatePath);
 
@@ -324,5 +325,22 @@ final public class ScriptUtilContext extends AbstractUtilContext {
         }
 
         flagRuleExecution(dependencyApprovalRule);
+    }
+
+    public boolean isPackageImportLatest(String packageName, String version) {
+        PackageBundleClient client = new PackageBundleClient();
+
+        client.loadPackageBundles(parameters);
+
+        return client.isLatestVersion(packageName, version);
+    }
+
+
+    public String getLatestPackageVersion(String packageName) {
+        PackageBundleClient client = new PackageBundleClient();
+
+        client.loadPackageBundles(parameters);
+
+        return client.getLatestVersion(packageName);
     }
 }

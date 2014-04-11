@@ -83,4 +83,6 @@ public class AbstractUtilContext {
     }
 
     public boolean isChildPOM() { return (null != parentProject); }
+
+    public void logInfo(String logString) { log.info(logString); }
 }

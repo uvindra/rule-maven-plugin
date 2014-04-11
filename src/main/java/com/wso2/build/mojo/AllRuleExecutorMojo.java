@@ -1,6 +1,7 @@
 package com.wso2.build.mojo;
 
 import com.wso2.build.beans.Parameters;
+import com.wso2.build.core.Configs;
 import com.wso2.build.core.RuleExecutor;
 import com.wso2.build.interfaces.Factory;
 import com.wso2.build.interfaces.FactoryContainer;
@@ -16,7 +17,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -81,7 +81,7 @@ public class AllRuleExecutorMojo  extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        Parameters parameters = ruleExecutor.loadParameters(settings);
+        Parameters parameters = Configs.loadParameters(settings);
 
         try {
             PlexusContainer container = new DefaultPlexusContainer();

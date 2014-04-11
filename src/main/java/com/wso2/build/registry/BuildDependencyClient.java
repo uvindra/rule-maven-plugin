@@ -44,10 +44,10 @@ public class BuildDependencyClient {
 
     public void loadDependecies(Parameters parameters) {
         try {
-            String axis2Repo = parameters.getGregHome() + File.separator +"repository" + File.separator +
+            String axis2Repo = parameters.getHomePath() + File.separator +"repository" + File.separator +
                     "deployment" + File.separator + "client";
 
-            System.setProperty("javax.net.ssl.trustStore", parameters.getGregHome() + File.separator + "repository" +
+            System.setProperty("javax.net.ssl.trustStore", parameters.getHomePath() + File.separator + "repository" +
                     File.separator + "resources" + File.separator + "security" + File.separator +
                     "wso2carbon.jks");
             System.setProperty("javax.net.ssl.trustStorePassword", parameters.getTrustStorePassword());
@@ -57,18 +57,18 @@ public class BuildDependencyClient {
             configContext = ConfigurationContextFactory.createConfigurationContextFromFileSystem(
                     axis2Repo, axis2Conf);
 
-            moduleStub = new ModuleStub(configContext, parameters.getGregModuleEndpoint(), false);
+            moduleStub = new ModuleStub(configContext, parameters.getModuleEndpoint(), false);
 
-            adminStub = new RelationAdminServiceStub(configContext, parameters.getGregDependencyEndpoint(), false);
+            adminStub = new RelationAdminServiceStub(configContext, parameters.getDependencyEndpoint(), false);
 
-            artifactServiceStub = new ManageGenericArtifactServiceStub(configContext, parameters.getGregArtifactEndpoint(), false);
+            artifactServiceStub = new ManageGenericArtifactServiceStub(configContext, parameters.getArtifactEndpoint(), false);
 
-            lifecycleStub = new CustomLifecyclesChecklistAdminServiceStub(configContext, parameters.getGregLifeCycleEndpoint(), false);
+            lifecycleStub = new CustomLifecyclesChecklistAdminServiceStub(configContext, parameters.getLifeCycleEndpoint(), false);
 
-            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getGregUsername(), parameters.getGregPassword(), moduleStub._getServiceClient());
-            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getGregUsername(), parameters.getGregPassword(), adminStub._getServiceClient());
-            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getGregUsername(), parameters.getGregPassword(), artifactServiceStub._getServiceClient());
-            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getGregUsername(), parameters.getGregPassword(), lifecycleStub._getServiceClient());
+            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getRegistryUsername(), parameters.getRegistryPassword(), moduleStub._getServiceClient());
+            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getRegistryUsername(), parameters.getRegistryPassword(), adminStub._getServiceClient());
+            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getRegistryUsername(), parameters.getRegistryPassword(), artifactServiceStub._getServiceClient());
+            CarbonUtils.setBasicAccessSecurityHeaders(parameters.getRegistryUsername(), parameters.getRegistryPassword(), lifecycleStub._getServiceClient());
         }
         catch (AxisFault axisFault) {
             axisFault.printStackTrace();

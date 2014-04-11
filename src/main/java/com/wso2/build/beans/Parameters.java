@@ -6,48 +6,49 @@ import java.io.Serializable;
  * Created by uvindra on 2/12/14.
  */
 public class Parameters implements Serializable {
-    private String gregHome;
-    private String gregRuleEndpoint;
-    private String gregLifeCycleEndpoint;
-    private String gregModuleEndpoint;
-    private String gregDependencyEndpoint;
-    private String gregArtifactEndpoint;
-    private String gregUsername;
-    private String gregPassword;
+    private String homePath;
+    private String ruleEndpoint;
+    private String lifeCycleEndpoint;
+    private String moduleEndpoint;
+    private String dependencyEndpoint;
+    private String artifactEndpoint;
+    private String packageEndpoint;
+    private String registryUsername;
+    private String registryPassword;
     private String trustStorePassword;
     private String excludes;
     private String explicits;
 
-    public String getGregHome() {
-        return gregHome;
+    public String getHomePath() {
+        return homePath;
     }
 
-    public void setGregHome(String gregHome) {
-        this.gregHome = gregHome;
+    public void setHomePath(String homePath) {
+        this.homePath = homePath;
     }
 
-    public String getGregRuleEndpoint() {
-        return gregRuleEndpoint;
+    public String getRuleEndpoint() {
+        return ruleEndpoint;
     }
 
-    public void setGregRuleEndpoint(String gregRuleEndpoint) {
-        this.gregRuleEndpoint = gregRuleEndpoint;
+    public void setRuleEndpoint(String ruleEndpoint) {
+        this.ruleEndpoint = ruleEndpoint;
     }
 
-    public String getGregUsername() {
-        return gregUsername;
+    public String getRegistryUsername() {
+        return registryUsername;
     }
 
-    public void setGregUsername(String gregUsername) {
-        this.gregUsername = gregUsername;
+    public void setRegistryUsername(String registryUsername) {
+        this.registryUsername = registryUsername;
     }
 
-    public String getGregPassword() {
-        return gregPassword;
+    public String getRegistryPassword() {
+        return registryPassword;
     }
 
-    public void setGregPassword(String gregPassword) {
-        this.gregPassword = gregPassword;
+    public void setRegistryPassword(String registryPassword) {
+        this.registryPassword = registryPassword;
     }
 
     public String getTrustStorePassword() {
@@ -58,12 +59,12 @@ public class Parameters implements Serializable {
         this.trustStorePassword = trustStorePassword;
     }
 
-    public String getGregLifeCycleEndpoint() {
-        return gregLifeCycleEndpoint;
+    public String getLifeCycleEndpoint() {
+        return lifeCycleEndpoint;
     }
 
-    public void setGregLifeCycleEndpoint(String gregLifeCycleEndpoint) {
-        this.gregLifeCycleEndpoint = gregLifeCycleEndpoint;
+    public void setLifeCycleEndpoint(String lifeCycleEndpoint) {
+        this.lifeCycleEndpoint = lifeCycleEndpoint;
     }
 
     public String getExcludes() {
@@ -82,27 +83,35 @@ public class Parameters implements Serializable {
         this.explicits = explicits;
     }
 
-    public String getGregModuleEndpoint() {
-        return gregModuleEndpoint;
+    public String getModuleEndpoint() {
+        return moduleEndpoint;
     }
 
-    public void setGregModuleEndpoint(String gregModuleEndpoint) {
-        this.gregModuleEndpoint = gregModuleEndpoint;
+    public void setModuleEndpoint(String moduleEndpoint) {
+        this.moduleEndpoint = moduleEndpoint;
     }
 
-    public String getGregDependencyEndpoint() {
-        return gregDependencyEndpoint;
+    public String getDependencyEndpoint() {
+        return dependencyEndpoint;
     }
 
-    public void setGregDependencyEndpoint(String gregDependencyEndpoint) {
-        this.gregDependencyEndpoint = gregDependencyEndpoint;
+    public void setDependencyEndpoint(String dependencyEndpoint) {
+        this.dependencyEndpoint = dependencyEndpoint;
     }
 
-    public String getGregArtifactEndpoint() {
-        return gregArtifactEndpoint;
+    public String getArtifactEndpoint() {
+        return artifactEndpoint;
     }
 
-    public void setGregArtifactEndpoint(String gregArtifactEndpoint) {
-        this.gregArtifactEndpoint = gregArtifactEndpoint;
+    public void setArtifactEndpoint(String artifactEndpoint) {
+        this.artifactEndpoint = artifactEndpoint;
+    }
+
+    public String getPackageEndpoint() {
+        return packageEndpoint;
+    }
+
+    public void setPackageEndpoint(String packageEndpoint) {
+        this.packageEndpoint = packageEndpoint;
     }
 }
