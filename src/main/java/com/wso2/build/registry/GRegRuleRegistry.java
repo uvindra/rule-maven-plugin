@@ -185,15 +185,18 @@ public class GRegRuleRegistry implements RuleRegistry{
                 try {
                     String rule = FileUtils.readFileToString(file, "utf8");
 
+                    String searchKey = extractTagValue(rule, nameStartTag, nameEndTag) + ":" +
+                            extractTagValue(rule, compatibleMavenVersionStartTag, compatibleMavenVersionEndTag);
+
                     if (!ruleKeys.isEmpty()) {
-                        String searchKey = extractTagValue(rule, nameStartTag, nameEndTag) + ":" +
-                                extractTagValue(rule, compatibleMavenVersionStartTag, compatibleMavenVersionEndTag);
 
                         if (ruleKeys.contains(searchKey)) { // Build rule already exists in registry
                             log.info("Rule " + searchKey + " already exists in registry");
                             continue;   // Dont export the rule, or it will get duplicated in the registry
                         }
                     }
+
+                    log.info("Rule " + searchKey + " is being exported");
 
                     addRule(rule);
                 } catch (IOException e) {
