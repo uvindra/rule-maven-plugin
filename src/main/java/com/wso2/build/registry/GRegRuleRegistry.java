@@ -167,9 +167,14 @@ public class GRegRuleRegistry implements RuleRegistry{
 
         File directory = new File(ruleImportPath);
 
-        if (!directory.exists()) {
+        if (directory.exists()) {
             String[] extension = {ruleFileExtension};
             Collection<File> files = FileUtils.listFiles(directory, extension, true);
+
+            if (files.isEmpty()) {
+                log.info("Rule files do not exist for exporting");
+                return;
+            }
 
             List<Rule> ruleList = downloadRulesFromRegistry();
 
@@ -204,6 +209,10 @@ public class GRegRuleRegistry implements RuleRegistry{
                 }
             }
         }
+        else {
+            log.info("Rule directory " + ruleImportPath + " does not exist, cannot export");
+        }
+
     }
 
 
