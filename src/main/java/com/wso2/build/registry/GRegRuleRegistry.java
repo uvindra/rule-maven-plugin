@@ -45,7 +45,7 @@ public class GRegRuleRegistry implements RuleRegistry{
     private static final String compatibleMavenVersionEndTag = "</version>";
     private static final String ruleActiveStatus = "Active";
     private static final String importRulesFolder = "ruleimport";
-    private static final String ruleFileExtension = ".rule";
+    private static final String ruleFileExtension = "rule";
 
 
     public GRegRuleRegistry(Parameters parameters) {
@@ -142,7 +142,7 @@ public class GRegRuleRegistry implements RuleRegistry{
 
             String name = extractTagValue(rule, nameStartTag, nameEndTag);
 
-            File file = new File(ruleImportPath + File.separator + name + ruleFileExtension);
+            File file = new File(ruleImportPath + File.separator + name + "." +ruleFileExtension);
 
             try {
                 //file.createNewFile();
@@ -287,13 +287,17 @@ public class GRegRuleRegistry implements RuleRegistry{
     }
 
     private String[] getRuleArtifactIds() throws MojoExecutionException {
-        String[] artifactIds = new String[0];
+        String[] artifactIds;
 
         try {
             BuildRuleStub.GetBuildRuleArtifactIDs artifactIDs = new BuildRuleStub.GetBuildRuleArtifactIDs();
             BuildRuleStub.GetBuildRuleArtifactIDsResponse getResponse = ruleStub.getBuildRuleArtifactIDs(artifactIDs);
 
             artifactIds = getResponse.get_return();
+
+            if (null == artifactIds) {
+                artifactIds = new String[0];
+            }
         }
         catch (RemoteException e) {
             e.printStackTrace();
