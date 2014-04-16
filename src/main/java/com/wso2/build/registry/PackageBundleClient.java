@@ -10,10 +10,7 @@ import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.File;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Created by uvindra on 4/8/14.
@@ -37,7 +34,7 @@ public class PackageBundleClient {
     }
 
     public boolean isLatestExportedVersion(final String packageName, final String version) {
-        TreeSet<String> versionSet = packageVersions.get(packageName);
+        TreeSet<String> versionSet = getVersionSet(packageName);
 
         if (null == versionSet) { // Package does not exist
             return true;
@@ -52,8 +49,8 @@ public class PackageBundleClient {
         return true;
     }
 
-    public boolean isVersionExported(final String packageName, final String version) {
-        TreeSet<String> versionSet = packageVersions.get(packageName);
+    public boolean isVersionExported(String packageName, String version) {
+        TreeSet<String> versionSet = getVersionSet(packageName);
 
         if (null == versionSet) { // Package does not exist
             return true;
@@ -66,9 +63,9 @@ public class PackageBundleClient {
     public String getLatestVersion(final String packageName) {
         String version = "";
 
-        TreeSet<String> versionSet = packageVersions.get(packageName);
+        TreeSet<String> versionSet = getVersionSet(packageName);
 
-        if (null != versionSet) { // Package does not exist
+        if (null != versionSet) { // Package exists
             version = versionSet.last();
         }
 
@@ -79,15 +76,31 @@ public class PackageBundleClient {
     public List<String> getExportedVersions(final String packageName) {
         List<String> versions = new ArrayList<String>();
 
-        TreeSet<String> versionSet = packageVersions.get(packageName);
+        TreeSet<String> versionSet = getVersionSet(packageName);
 
-        if (null != versionSet) { // Package does not exist
+        if (null != versionSet) { // Package exists
             versions.addAll(versionSet);
         }
 
         return versions;
     }
 
+
+    TreeSet<String> getVersionSet(String packageName) {
+        TreeSet<String> versionSet = packageVersions.get(packageName);
+
+        if (null == versionSet) { // Package does not exist
+            int nameLen = packageName.length();
+            String postValues = packageName.substring(nameLen - 2);
+
+            if (postValues.equalsIgnoreCase(".*")) {
+                packageName = packageName.substring(0, nameLen - 2);
+                versionSet = packageVersions.get(packageName);
+            }
+        }
+
+        return versionSet;
+    }
 
 
     private void setupPackageInfo(Parameters parameters) {
@@ -142,6 +155,8 @@ public class PackageBundleClient {
                 TreeSet<String> versionSet = packageVersions.get(name);
                 versionSet.add(version);
             }
+
+
         }
     }
 
